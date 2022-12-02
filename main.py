@@ -1,18 +1,5 @@
 import requests
 from bs4 import BeautifulSoup
-import sqlite3
-
-def main():
-    connection = sqlite3.connect('games.db')
-    cursor = connection.cursor()
-    cursor.execute("""
-        CREATE TABLE games (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            url TEXT,
-            game TEXT
-        )
-    """)
-    connection.close()
 
 url = (
     'https://store.steampowered.com/search/results/?'
@@ -26,21 +13,19 @@ url = (
     'supportedlang=russian&'
     'infinite=1'
 )
-'''
-response_json = requests.get(url).json()
+def main(url):
+    response = requests.get(url).json()
+    soup = BeautifulSoup(response['results_html'], 'lxml')
+    game_titles = soup.find_all('span', attrs={'class': 'title'})
 
-soup = BeautifulSoup(response_json['results_html'], 'lxml')
-
-game_titles = soup.find_all('span', attrs={'class':'title'})
-
-
-print(
-    tuple(
-        map (
-            lambda game_title:game_title.text,
-            game_titles,
+    print(
+        tuple(
+            map(
+                lambda game_title: game_title.text,
+                game_titles,
+            )
         )
     )
-)
-'''
-main()
+
+if __name__=='__main__':
+    main(url)
